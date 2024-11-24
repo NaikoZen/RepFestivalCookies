@@ -24,7 +24,7 @@ public class DragAndDrop : MonoBehaviour
     {
         // Atualiza a posição do objeto para seguir o mouse enquanto o botão está pressionado
         transform.position = GetMouseWorldPos() + offset;
-        Debug.Log("Arrastando");
+       // Debug.Log("Arrastando");
     }
 
     private Vector3 GetMouseWorldPos()
