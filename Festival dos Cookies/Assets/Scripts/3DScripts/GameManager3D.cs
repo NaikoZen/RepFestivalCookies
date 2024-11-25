@@ -14,7 +14,8 @@ public class GameManager3D : MonoBehaviour
         if (isPlayerTurn)
         {
             Debug.Log("Carta do jogador jogada!");
-           // Destroy(card); // Opcional: Remove a carta
+            Destroy(card); // Opcional: Remove a carta
+
             EndPlayerTurn();
         }
     }
