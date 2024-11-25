@@ -4,18 +4,25 @@ using UnityEngine;
 
 public class DragEDrop : MonoBehaviour
 {
-    public TableArea3D tableArea3D;
-    public GameManager3D gameManager;
     private Camera mainCamera;
-    private bool isDragging = false;
     private Vector3 offset;
+    Collider2D collider2D;
+    public GameManager3D gameManager;
+
+    public TableArea3D tableArea3D;
+    private bool isDragging = false;
     private float zPlane; // Plano onde as cartas serão arrastadas
+    public Transform dropArea; // Zona onde a carta pode ser solta
+    public string destinationTag = "DropArea"; // Procura pelo objeto com essa tag
 
-
-
+    private void Awake()
+    {
+        collider2D = GetComponent<Collider2D>();
+    }
     private void Start()
 
     {
+        /*
         if (tableArea3D == null)
         { 
             tableArea3D = GameObject.FindWithTag("TableArea").GetComponent<TableArea3D>();
@@ -27,10 +34,14 @@ public class DragEDrop : MonoBehaviour
     tableArea3D = GetComponent<TableArea3D>();
         gameManager = GetComponent<GameManager3D>();
         mainCamera = Camera.main;
+        */
+
+        dropArea = GameObject.Find("DropArea").transform; // Localiza o objeto de "drop"
     }
 
     private void OnMouseDown()
     {
+        /*
         isDragging = true;
 
         // Calcula o plano de movimento com base na posição inicial
@@ -39,10 +50,14 @@ public class DragEDrop : MonoBehaviour
         // Calcula o deslocamento entre o clique e a posição da carta
         Vector3 mousePos = GetMouseWorldPosition();
         offset = transform.position - mousePos;
+        */
+
+        offset = transform.position - GetMouseWorldPosition();
     }
 
     private void OnMouseDrag()
     {
+        /*
         bool estaNaArea = tableArea3D.Estanaareajogavel;
         if (isDragging)
         {
@@ -50,10 +65,13 @@ public class DragEDrop : MonoBehaviour
             Vector3 newPos = new Vector3(mousePos.x + offset.x, transform.position.y, mousePos.z + offset.z);
             transform.position = newPos;
         }
+        */
+        transform.position = GetMouseWorldPosition() + offset;
     }
 
     private void OnMouseUp()
     {
+        /*
         bool estaNaArea = tableArea3D.Estanaareajogavel;
 
         isDragging = false;
@@ -68,16 +86,37 @@ public class DragEDrop : MonoBehaviour
             Debug.Log("Área inválida. Retornando à posição inicial.");
             // Volta para a posição original
         }
+        */
+
+        collider2D.enabled = false;
+        var rayOrigin = Camera.main.transform.position;
+        var rayDirection = GetMouseWorldPosition() - Camera.main.transform.position;
+
+        RaycastHit2D hitInfo;
+        if (hitInfo = Physics2D.Raycast(rayOrigin, rayDirection))
+        {
+            if (hitInfo.transform.tag == destinationTag)
+            {
+                transform.position = hitInfo.transform.position + new Vector3(0, 0, -0.01f);
+            }
+        }
+        collider2D.enabled = true;
     }
 
     private Vector3 GetMouseWorldPosition()
     {
+        var mouseScreenPos = Input.mousePosition;
+        mouseScreenPos.z = Camera.main.WorldToScreenPoint(transform.position).z;
+        return Camera.main.ScreenToWorldPoint(mouseScreenPos);
+        /*
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         Plane plane = new Plane(Vector3.forward, new Vector3(0, 0, zPlane));
         plane.Raycast(ray, out float distance);
         return ray.GetPoint(distance);
+        */
     }
 
+    /*
     private bool IsInPlayArea()
     {
         bool estaNaArea = tableArea3D.Estanaareajogavel;
@@ -92,8 +131,22 @@ public class DragEDrop : MonoBehaviour
             // Adicione lógica para verificar se a carta foi arrastada para uma área válida
             return false;
         }
-
-       
-       
     }
+
+    private bool IsInsideDropArea()
+    {
+        // Verifica se o objeto está dentro da área de drop
+        Collider2D dropAreaCollider = dropArea.GetComponent<Collider2D>();
+        if (dropAreaCollider != null && dropAreaCollider.bounds.Contains(transform.position))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log("A carta colidiu com algo!");
+    }
+    */
 }
